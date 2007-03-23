@@ -1,10 +1,50 @@
 """Extend introspect.py for Java based Jython classes."""
 
+from org.python.core import PyJavaClass
+from java.lang import Class
+from java.lang.reflect import Modifier
+from java.util.logging import Logger
 from introspect import *
 import string
+import re
+import types
 
 __author__ = "Don Coleman <dcoleman@chariotsolutions.com>"
-__cvsid__ = "$Id: jintrospect.py,v 1.6 2003/05/01 03:43:53 dcoleman Exp $"
+
+_re_import_package = re.compile('import\s+(.+)\.') # import package
+# TODO need to check for a trailing '.'  example: "from java import lang." don't autocomplete on trailing '.'
+_re_from_package_import = re.compile('from\s+(\w+(?:\.\w+)*)\.?(?:\s*import\s*)?') # from package import class 
+
+# TODO replace this with something better!
+def debug(name, value=None):
+    if value == None:
+        print >> sys.stderr, name
+    else:
+        print >> sys.stderr, "%s = %s" % (name, value)
+
+def completePackageName(target):
+    """ Get a package object given the full name."""      
+    targetComponents = target.split('.')
+    base = targetComponents[0]
+    baseModule = __import__(base, globals(), locals())
+    module = baseModule    
+
+    for component in targetComponents[1:]:
+        module = getattr(module, component)
+
+    list = dir(module)
+    list.remove('__name__')
+    list.append('*')
+    return list
+  
+def getPackageName(command):    
+        
+    match = _re_import_package.match(command)
+    if not match:
+        #try the other re
+        match = _re_from_package_import.match(command)
+            
+    return match.groups()[0]
 
 def unique(methods):
     """
@@ -25,9 +65,18 @@ def getAutoCompleteList(command='', locals=None, includeMagic=1,
     """Return list of auto-completion options for command.
     
     The list of options will be based on the locals namespace."""
+    debug('getAutoCompleteList %s' % command) 
+    
     attributes = []
     # Get the proper chunk of code from the command.
     root = getRoot(command, terminator='.')
+    
+    # check to see if the user is attempting to import a package
+    # this may need to adjust this so that it doesn't pollute the namespace
+    if command.startswith('import ') or command.startswith('from '):
+        target = getPackageName(command)
+        return completePackageName(target)
+    
     try:
         if locals is not None:
             object = eval(root, locals)
@@ -40,10 +89,24 @@ def getAutoCompleteList(command='', locals=None, includeMagic=1,
         # use existing code
         attributes = getAttributeNames(object, includeMagic, includeSingle, includeDouble)
     else:
-        methods = unique(methodsOf(object.__class__))
+        if type(object) == PyJavaClass:
+            return staticMethodNames(object)
+        else:
+            # TODO hide static methods
+            methods = unique(methodsOf(object.__class__))
         attributes = [eachMethod.__name__ for eachMethod in methods]
         
     return attributes
+
+def staticMethodNames(clazz):
+    """return a list of static methods in a class"""
+    # TODO get static methods from base classes
+    static_methods = {}
+    declared_methods = Class.getDeclaredMethods(clazz)
+    for method in declared_methods:
+        if Modifier.isStatic(method.getModifiers()) and Modifier.isPublic(method.getModifiers()):
+            static_methods[method.name] = method
+    return static_methods.keys()        
 
 def methodsOf(clazz):
     """return a list of all the methods in a class"""

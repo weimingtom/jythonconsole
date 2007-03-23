@@ -6,11 +6,12 @@ The UI uses code from Carlos Quiroz's 'Jython Interpreter for JEdit' http://www.
 """
 
 from javax.swing import JFrame, JScrollPane, JWindow, JTextPane, Action, KeyStroke, WindowConstants
-from javax.swing.text import JTextComponent, TextAction, SimpleAttributeSet, StyleConstants
+from javax.swing.text import JTextComponent, TextAction, SimpleAttributeSet, StyleConstants, DefaultEditorKit
 from java.awt import Color, Font, FontMetrics, Point
 from java.awt.event import  InputEvent, KeyEvent, WindowAdapter
 
 import jintrospect
+from jintrospect import debug
 from popup import Popup
 from tip import Tip
 from history import History
@@ -21,14 +22,10 @@ from code import InteractiveInterpreter
 from org.python.util import InteractiveConsole
 
 __author__ = "Don Coleman <dcoleman@chariotsolutions.com>"
-__cvsid__ = "$Id: console.py,v 1.6 2003/08/15 16:04:36 don Exp $"
 
-def debug(name, value=None):
-    if value == None:
-        print >> sys.stderr, name
-    else:
-        print >> sys.stderr, "%s = %s" % (name, value)
-
+import re
+# allows multiple imports like "from java.lang import String, Properties"
+_re_from_import = re.compile("from\s+\S+\s+import(\s+\S+,\s?)?")
 
 class Console:
     PROMPT = sys.ps1
@@ -57,13 +54,18 @@ class Console:
             (KeyEvent.VK_ENTER, 0, "jython.enter", self.enter),
             (KeyEvent.VK_DELETE, 0, "jython.delete", self.delete),
             (KeyEvent.VK_HOME, 0, "jython.home", self.home),
+            (KeyEvent.VK_LEFT, InputEvent.META_DOWN_MASK, "jython.home", self.home),                 
             (KeyEvent.VK_UP, 0, "jython.up", self.history.historyUp),
             (KeyEvent.VK_DOWN, 0, "jython.down", self.history.historyDown),
             (KeyEvent.VK_PERIOD, 0, "jython.showPopup", self.showPopup),
-            (KeyEvent.VK_ESCAPE, 0, "jython.hide", self.hide),
+            (KeyEvent.VK_ESCAPE, 0, "jython.hide", self.hide),                   
             
             ('(', 0, "jython.showTip", self.showTip),
             (')', 0, "jython.hideTip", self.hideTip),
+
+            # Mac/Emacs keystrokes
+            (KeyEvent.VK_A, InputEvent.CTRL_MASK, "jython.home", self.home),     
+            # TODO VK_E goto end of line; VK_K kill to end of line
             
             #(KeyEvent.VK_UP, InputEvent.CTRL_MASK, DefaultEditorKit.upAction, self.output.keymap.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0))),
             #(KeyEvent.VK_DOWN, InputEvent.CTRL_MASK, DefaultEditorKit.downAction, self.output.keymap.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0)))
@@ -142,7 +144,7 @@ class Console:
         
         line = self.getinput()
         line = line[:-1] # remove \n
-        # introspect is expecting a training '('
+        # introspect is expecting a trailing '('
         line += '('
 
         self.insertText('(')
@@ -156,19 +158,16 @@ class Console:
             
 
     def showPopup(self, event=None):
-
+        """show code completion popup"""
         line = self.getinput()
-        # this is silly, I have to add the '.' and the other code removes it.
         line = line[:-1] # remove \n
+        # this is silly, I have to add the '.' and the other code removes it.
         line = line + '.'
-        #print >> sys.stderr, "line:",line
-        
         # TODO get this code into Popup
         # TODO handle errors gracefully
         try:
             list = jintrospect.getAutoCompleteList(line, self.locals)
         except Exception, e:
-            # TODO handle this gracefully
             print >> sys.stderr, e
             return
 
@@ -268,7 +267,12 @@ class Console:
                 self.bs = 1
             else:
                 self.bs = 0
-
+        # TODO can this be added to the keymap?
+        elif event.keyCode == KeyEvent.VK_SPACE:
+            matches = _re_from_import.match(self.getinput().rstrip())
+            if matches:
+                self.showPopup()                
+                
     # TODO refactor me
     def write(self, text):
         self.__addOutput(self.infoColor, text)

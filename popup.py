@@ -41,6 +41,18 @@ class Popup(JWindow):
             self.chooseSelected()
             e.consume()
 
+        elif code == KeyEvent.VK_SPACE:
+            # TODO for functions: choose the selected option, add parenthesis
+            # and put the cursor between them.  example: obj.function(^cursor_here)
+        	self.chooseSelected()
+
+        elif code == KeyEvent.VK_PERIOD:
+        	self.chooseSelected()
+
+        # This fails because the key listener in console gets it first
+        elif code == KeyEvent.VK_LEFT_PARENTHESIS:
+            self.chooseSelected()
+
         elif code == 8: # BACKSPACE
             self.typed = self.typed[:-1]
             self.data = filter(self.originalData, self.typed)
@@ -85,11 +97,12 @@ class Popup(JWindow):
     def chooseSelected(self):
         """Choose the selected value in the list"""
         value = self.list.getSelectedValue()
-        startPosition = self.dotPosition + 1
-        caretPosition = self.textComponent.getCaretPosition()
-        self.textComponent.select(startPosition, caretPosition) 
-        self.textComponent.replaceSelection(value)
-        self.textComponent.setCaretPosition(startPosition + len(value))
+        if value != None:
+            startPosition = self.dotPosition + 1
+            caretPosition = self.textComponent.getCaretPosition()
+            self.textComponent.select(startPosition, caretPosition) 
+            self.textComponent.replaceSelection(value)
+            self.textComponent.setCaretPosition(startPosition + len(value))
         self.hide()
 
     def setMethods(self, methodList):
