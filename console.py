@@ -81,8 +81,8 @@ class Console:
         self.__inittext()
         self.initialLocation = self.doc.createPosition(self.doc.length-1)
 
-	# Don't pass frame to popups. JWindows with null owners are not focusable
-	# this fixes the focus problem on Win32, but make the mouse problem worse
+        # Don't pass frame to popups. JWindows with null owners are not focusable
+        # this fixes the focus problem on Win32, but make the mouse problem worse
         self.popup = Popup(None, self.output)
         self.tip = Tip(None)
 
@@ -95,6 +95,15 @@ class Console:
         self.locals['console'] = self
 
         self.caret = self.output.getCaret()
+
+    def insertText(self, text):
+        """insert text at the current caret position"""
+        # seems like there should be a better way to do this....
+        # might be better as a method on the text component?
+        caretPosition = self.output.getCaretPosition()
+        self.output.select(caretPosition, caretPosition)
+        self.output.replaceSelection(text)
+        self.output.setCaretPosition(caretPosition + len(text))
 
     # TODO refactor me
     def getinput(self):
@@ -121,8 +130,7 @@ class Console:
 
     def hideTip(self, event=None):
         self.tip.hide()
-        # TODO this needs to insert ')' at caret!
-        self.write(')')
+        self.insertText(')')
 
     def showTip(self, event=None):
         # get the display point before writing text
@@ -133,19 +141,13 @@ class Console:
             self.popup.hide()
         
         line = self.getinput()
-        #debug("line", line)
-        # Hack 'o rama
         line = line[:-1] # remove \n
+        # introspect is expecting a training '('
         line += '('
-        #debug("line", line)
 
-        # TODO this needs to insert '(' at caret!
-        self.write('(')
+        self.insertText('(')
         
         (name, argspec, tip) = jintrospect.getCallTipJava(line, self.locals)
-        #debug("name", name)
-        #debug("argspec", argspec)
-        #debug("tip", tip)
 
         if tip:
             self.tip.setLocation(displayPoint)
