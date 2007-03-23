@@ -263,11 +263,15 @@ def getdoc(object):
     All tabs are expanded to spaces.  To clean up docstrings that are
     indented to line up with blocks of code, any whitespace than can be
     uniformly removed from the second line onwards is removed."""
+
     try:
         doc = object.__doc__
     except AttributeError:
         return None
-    if not isinstance(doc, (str, unicode)):
+    # Jython doesn't like this syntax
+    # if not isinstance(doc, (str, unicode)):
+    # in Jython UnicodeType == StringType
+    if not isinstance(doc, types.StringType):
         return None
     try:
         lines = string.split(string.expandtabs(doc), '\n')
@@ -565,39 +569,43 @@ def getargs(co):
     Three things are returned: (args, varargs, varkw), where 'args' is
     a list of argument names (possibly containing nested lists), and
     'varargs' and 'varkw' are the names of the * and ** arguments or None."""
+
     if not iscode(co): raise TypeError, 'arg is not a code object'
 
-    code = co.co_code
+##     #jython doesn't have co_code
+##     code = co.co_code
     nargs = co.co_argcount
     names = co.co_varnames
     args = list(names[:nargs])
     step = 0
 
-    # The following acrobatics are for anonymous (tuple) arguments.
-    for i in range(nargs):
-        if args[i][:1] in ['', '.']:
-            stack, remain, count = [], [], []
-            while step < len(code):
-                op = ord(code[step])
-                step = step + 1
-                if op >= dis.HAVE_ARGUMENT:
-                    opname = dis.opname[op]
-                    value = ord(code[step]) + ord(code[step+1])*256
-                    step = step + 2
-                    if opname in ['UNPACK_TUPLE', 'UNPACK_SEQUENCE']:
-                        remain.append(value)
-                        count.append(value)
-                    elif opname == 'STORE_FAST':
-                        stack.append(names[value])
-                        remain[-1] = remain[-1] - 1
-                        while remain[-1] == 0:
-                            remain.pop()
-                            size = count.pop()
-                            stack[-size:] = [stack[-size:]]
-                            if not remain: break
-                            remain[-1] = remain[-1] - 1
-                        if not remain: break
-            args[i] = stack[0]
+## We don't have co_code, so skip this for now
+##    
+##     # The following acrobatics are for anonymous (tuple) arguments.
+##     for i in range(nargs):
+##         if args[i][:1] in ['', '.']:
+##             stack, remain, count = [], [], []
+##             while step < len(code):
+##                 op = ord(code[step])
+##                 step = step + 1
+##                 if op >= dis.HAVE_ARGUMENT:
+##                     opname = dis.opname[op]
+##                     value = ord(code[step]) + ord(code[step+1])*256
+##                     step = step + 2
+##                     if opname in ['UNPACK_TUPLE', 'UNPACK_SEQUENCE']:
+##                         remain.append(value)
+##                         count.append(value)
+##                     elif opname == 'STORE_FAST':
+##                         stack.append(names[value])
+##                         remain[-1] = remain[-1] - 1
+##                         while remain[-1] == 0:
+##                             remain.pop()
+##                             size = count.pop()
+##                             stack[-size:] = [stack[-size:]]
+##                             if not remain: break
+##                             remain[-1] = remain[-1] - 1
+##                         if not remain: break
+##             args[i] = stack[0]
 
     varargs = None
     if co.co_flags & CO_VARARGS:
@@ -709,7 +717,9 @@ def getframeinfo(frame, context=1):
     filename = getsourcefile(frame)
     lineno = getlineno(frame)
     if context > 0:
-        start = lineno - 1 - context//2
+##         # Jython 2.1 can't handle //
+##         start = lineno - 1 - context//2
+        start = lineno - 1 - context/2
         try:
             lines, lnum = findsource(frame)
         except IOError:

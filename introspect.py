@@ -1,11 +1,15 @@
 """Provides a variety of introspective-type support functions for
-things like call tips and command auto completion."""
+things like call tips and command auto completion.
 
-__author__ = "Patrick K. O'Brien <pobrien@orbtech.com>"
-__cvsid__ = "$Id: introspect.py,v 1.62 2003/03/21 05:57:21 pobrien Exp $"
-__revision__ = "$Revision: 1.62 $"[11:-2]
+NOTE: this file is a modification of Patrick O'Brien's version 1.62
+"""
 
 from __future__ import nested_scopes
+
+__author__ = "Patrick K. O'Brien <pobrien@orbtech.com>"
+__cvsid__ = "$Id: introspect.py,v 1.5 2003/05/01 03:43:53 dcoleman Exp $"
+__revision__ = "$Revision: 1.5 $"[11:-2]
+
 
 import cStringIO
 import inspect
@@ -340,9 +344,15 @@ def getBaseObject(object):
     elif callable(object):
         # Get the __call__ method instead.
         try:
-            object = object.__call__.im_func
-            dropSelf = 1
+            call_method = object.__call__.im_func
+            if call_method.__name__ == '__call__':
+                # unbound jython method end up here, example: string.index(
+                dropSelf = 0
+            else:
+                object = call_method
+                dropSelf = 1
         except AttributeError:
+            # unbound python methods end up here
             dropSelf = 0
     else:
         dropSelf = 0
