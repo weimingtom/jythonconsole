@@ -107,7 +107,12 @@ def staticMethodNames(clazz):
     for method in declared_methods:
         if Modifier.isStatic(method.getModifiers()) and Modifier.isPublic(method.getModifiers()):
             static_methods[method.name] = method
-    return static_methods.keys() 
+    methods = static_methods.keys()
+    
+    for eachBase in clazz.__bases__:
+        methods.extend(staticMethodNames(eachBase)) 
+    
+    return methods
     
 def staticFieldNames(clazz):
     """return a list of static field names for class"""
@@ -117,7 +122,12 @@ def staticFieldNames(clazz):
     for field in declared_fields:
         if Modifier.isStatic(field.getModifiers()) and Modifier.isPublic(field.getModifiers()):
             static_fields[field.name] = field
-    return static_fields.keys()           
+    fields = static_fields.keys()   
+    
+    for eachBase in clazz.__bases__:
+         fields.extend(staticFieldNames(eachBase)) 
+
+    return fields        
 
 def methodsOf(clazz):
     """return a list of all the methods in a class"""
