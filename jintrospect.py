@@ -6,6 +6,20 @@ import string
 __author__ = "Don Coleman <dcoleman@chariotsolutions.com>"
 __cvsid__ = "$Id: jintrospect.py,v 1.6 2003/05/01 03:43:53 dcoleman Exp $"
 
+def unique(methods):
+    """
+    Return a unique list of methods
+    """
+    umethods = []
+    
+    u = {}
+    for method in methods:
+        if not u.has_key(method.__name__):
+            u[method.__name__] = 1
+            umethods.append(method)
+    
+    return umethods
+
 def getAutoCompleteList(command='', locals=None, includeMagic=1, 
                         includeSingle=1, includeDouble=1):
     """Return list of auto-completion options for command.
@@ -26,7 +40,7 @@ def getAutoCompleteList(command='', locals=None, includeMagic=1,
         # use existing code
         attributes = getAttributeNames(object, includeMagic, includeSingle, includeDouble)
     else:
-        methods = methodsOf(object.__class__)
+        methods = unique(methodsOf(object.__class__))
         attributes = [eachMethod.__name__ for eachMethod in methods]
         
     return attributes
