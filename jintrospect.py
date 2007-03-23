@@ -65,7 +65,7 @@ def getAutoCompleteList(command='', locals=None, includeMagic=1,
     """Return list of auto-completion options for command.
     
     The list of options will be based on the locals namespace."""
-    debug('getAutoCompleteList %s' % command) 
+    debug("getAutoCompleteList '%s'" % command) 
     
     attributes = []
     # Get the proper chunk of code from the command.
@@ -90,23 +90,34 @@ def getAutoCompleteList(command='', locals=None, includeMagic=1,
         attributes = getAttributeNames(object, includeMagic, includeSingle, includeDouble)
     else:
         if type(object) == PyJavaClass:
-            return staticMethodNames(object)
+            attributes = staticMethodNames(object)
+            attributes.extend(staticFieldNames(object))
         else:
             # TODO hide static methods
             methods = unique(methodsOf(object.__class__))
-        attributes = [eachMethod.__name__ for eachMethod in methods]
+            attributes = [eachMethod.__name__ for eachMethod in methods]
         
     return attributes
 
 def staticMethodNames(clazz):
-    """return a list of static methods in a class"""
+    """return a list of static method name for a class"""
     # TODO get static methods from base classes
     static_methods = {}
     declared_methods = Class.getDeclaredMethods(clazz)
     for method in declared_methods:
         if Modifier.isStatic(method.getModifiers()) and Modifier.isPublic(method.getModifiers()):
             static_methods[method.name] = method
-    return static_methods.keys()        
+    return static_methods.keys() 
+    
+def staticFieldNames(clazz):
+    """return a list of static field names for class"""
+    # TODO get static fields from base classes
+    static_fields = {}
+    declared_fields = Class.getDeclaredFields(clazz)
+    for field in declared_fields:
+        if Modifier.isStatic(field.getModifiers()) and Modifier.isPublic(field.getModifiers()):
+            static_fields[field.name] = field
+    return static_fields.keys()           
 
 def methodsOf(clazz):
     """return a list of all the methods in a class"""
