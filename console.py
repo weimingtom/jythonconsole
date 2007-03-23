@@ -8,7 +8,7 @@ The UI uses code from Carlos Quiroz's 'Jython Interpreter for JEdit' http://www.
 from javax.swing import JFrame, JScrollPane, JWindow, JTextPane, Action, KeyStroke, WindowConstants
 from javax.swing.text import JTextComponent, TextAction, SimpleAttributeSet, StyleConstants
 from java.awt import Color, Font, FontMetrics, Point
-from java.awt.event import  InputEvent, KeyEvent
+from java.awt.event import  InputEvent, KeyEvent, WindowAdapter
 
 import jintrospect
 from popup import Popup
@@ -18,9 +18,10 @@ from history import History
 import sys
 import traceback
 from code import InteractiveInterpreter
+from org.python.util import InteractiveConsole
 
 __author__ = "Don Coleman <dcoleman@chariotsolutions.com>"
-__cvsid__ = "$Id: console.py,v 1.4 2003/05/01 03:43:53 dcoleman Exp $"
+__cvsid__ = "$Id: console.py,v 1.6 2003/08/15 16:04:36 don Exp $"
 
 def debug(name, value=None):
     if value == None:
@@ -32,7 +33,7 @@ def debug(name, value=None):
 class Console:
     PROMPT = sys.ps1
     PROCESS = sys.ps2
-    BANNER = ["Jython Completion Shell"]
+    BANNER = ["Jython Completion Shell", InteractiveConsole.getDefaultBanner()]
 
     def __init__(self, frame):
 
@@ -369,7 +370,21 @@ class JythonFrame(JFrame):
     def __init__(self):
         self.title = "Jython"
         self.size = (600, 400)
-        self.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
+        try:
+            self.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
+        except:
+            # assume jdk < 1.4
+            self.addWindowListener(KillListener())
+            self.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
+
+class KillListener(WindowAdapter):
+    """
+    Handle EXIT_ON_CLOSE for jdk < 1.4
+    Thanks to James Richards for this method
+    """
+    def windowClosed(self, evt):
+        import java.lang.System as System
+        System.exit(0)
 
 if __name__ == "__main__":
     frame = JythonFrame()
