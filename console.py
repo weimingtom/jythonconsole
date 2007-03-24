@@ -16,6 +16,7 @@ from popup import Popup
 from tip import Tip
 from history import History
 
+import os
 import sys
 import traceback
 from code import InteractiveInterpreter
@@ -45,11 +46,15 @@ class Console:
         self.interp = Interpreter(self, self.locals)
         sys.stdout = StdOutRedirector(self)
 
-        # create a textpane
+        # create a textpane (consider renaming output to textpane)
         self.output = JTextPane(keyTyped = self.keyTyped, keyPressed = self.keyPressed)
-        # TODO rename output to textpane
 
-        # CTRL UP AND DOWN don't work
+        os_name = os.path.System.getProperty("os.name")
+        if os_name.startswith("Win"):
+            exit_key = KeyEvent.VK_Z
+        else:
+            exit_key = KeyEvent.VK_D
+
         keyBindings = [
             (KeyEvent.VK_ENTER, 0, "jython.enter", self.enter),
             (KeyEvent.VK_DELETE, 0, "jython.delete", self.delete),
@@ -62,20 +67,22 @@ class Console:
             
             ('(', 0, "jython.showTip", self.showTip),
             (')', 0, "jython.hideTip", self.hideTip),
+            (exit_key, InputEvent.CTRL_MASK, "jython.exit", self.quit),     
 
             # Mac/Emacs keystrokes
             (KeyEvent.VK_A, InputEvent.CTRL_MASK, "jython.home", self.home),     
             # TODO VK_E goto end of line; VK_K kill to end of line
             
+            # TODO CTRL/COMMAND + UP and DOWN should be mapped to normal up and down arrow functions
             #(KeyEvent.VK_UP, InputEvent.CTRL_MASK, DefaultEditorKit.upAction, self.output.keymap.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0))),
             #(KeyEvent.VK_DOWN, InputEvent.CTRL_MASK, DefaultEditorKit.downAction, self.output.keymap.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0)))
             ]
-        # TODO rename newmap to keymap
-        newmap = JTextComponent.addKeymap("jython", self.output.keymap)
-        for (key, modifier, name, function) in keyBindings:
-            newmap.addActionForKeyStroke(KeyStroke.getKeyStroke(key, modifier), ActionDelegator(name, function))
 
-        self.output.keymap = newmap
+        keymap = JTextComponent.addKeymap("jython", self.output.keymap)
+        for (key, modifier, name, function) in keyBindings:
+            keymap.addActionForKeyStroke(KeyStroke.getKeyStroke(key, modifier), ActionDelegator(name, function))
+
+        self.output.keymap = keymap
                 
         self.doc = self.output.document
         #self.panel.add(BorderLayout.CENTER, JScrollPane(self.output))
@@ -156,7 +163,6 @@ class Console:
             self.tip.setText(tip)
             self.tip.show()
             
-
     def showPopup(self, event=None):
         """show code completion popup"""
         line = self.getinput()
@@ -208,6 +214,9 @@ class Console:
         self.history.append(text)
 
         self.hide()
+
+    def quit(self, event=None):
+        sys.exit()
 
     def resetbuffer(self):
         self.buffer = []
@@ -354,13 +363,11 @@ class Interpreter(InteractiveInterpreter):
         InteractiveInterpreter.__init__(self, locals)
         self.console = console
         
-        
     def write(self, data):
         # send all output to the textpane
         # KLUDGE remove trailing linefeed
         self.console.printError(data[:-1])
         
-
 # redirect stdout to the textpane
 class StdOutRedirector:
     def __init__(self, console):
