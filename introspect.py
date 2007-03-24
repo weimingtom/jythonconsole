@@ -134,6 +134,9 @@ def getAllAttributeNames(object):
                 if type(base) is types.TypeType:
                     # Break a circular reference. Happens in Python 2.2.
                     pass
+                if type(base) is type(type):
+                    # Break a circular reference. Happens in Jython 2.2b1.
+                    pass    
                 else:
                     attrdict.update(getAllAttributeNames(base))
     return attrdict
