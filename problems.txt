@@ -10,9 +10,13 @@ Method popup gets abandoned with too many backspaces.  (Use <ESC> to make it go 
 
 History doesn't quite work correctly
 
-python.security.respectJavaAccessibility must be set to true in Jython's registry (is this still true?)
+Sometimes introspect.getAllAttributeNames goes into an infine recursive loop
 
---
+python.security.respectJavaAccessibility must be set to true in Jython's registry (this is the default setting)
+
+==========================
+Fixed in 0.0.2
+==========================
 
 You can't insert '(' and ')' in the middle of a line [ FIXED r8 ]
 
