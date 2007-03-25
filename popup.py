@@ -97,6 +97,7 @@ class Popup(JWindow):
     def chooseSelected(self):
         """Choose the selected value in the list"""
         value = self.list.getSelectedValue()
+        # TODO There is a timing issue here. try invokeLater()
         if value != None:
             startPosition = self.dotPosition + 1
             caretPosition = self.textComponent.getCaretPosition()
