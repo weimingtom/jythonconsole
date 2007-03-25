@@ -44,10 +44,10 @@ class Popup(JWindow):
         elif code == KeyEvent.VK_SPACE:
             # TODO for functions: choose the selected option, add parenthesis
             # and put the cursor between them.  example: obj.function(^cursor_here)
-        	self.chooseSelected()
+            self.chooseSelected()
 
         elif code == KeyEvent.VK_PERIOD:
-        	self.chooseSelected()
+            self.chooseSelected()
 
         # This fails because the key listener in console gets it first
         elif code == KeyEvent.VK_LEFT_PARENTHESIS:

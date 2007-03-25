@@ -223,21 +223,21 @@ class Console:
 
     # home key stops after prompt
     def home(self, event):
-		""" Triggered when HOME is pressed """
-		if self.inLastLine():
-			self.output.caretPosition = self.__lastLine()[0]
-		else:
-			lines = self.doc.rootElements[0].elementCount
-			for i in xrange(0,lines-1):
-				offsets = (self.doc.rootElements[0].getElement(i).startOffset, \
-					self.doc.rootElements[0].getElement(i).endOffset)
-				line = self.doc.getText(offsets[0], offsets[1]-offsets[0])
-				if self.output.caretPosition >= offsets[0] and \
-					self.output.caretPosition <= offsets[1]:
-					if line.startswith(Console.PROMPT) or line.startswith(Console.PROCESS):
-						self.output.caretPosition = offsets[0] + len(Console.PROMPT)
-					else:
-						self.output.caretPosition = offsets[0]
+        """ Triggered when HOME is pressed """
+        if self.inLastLine():
+            self.output.caretPosition = self.__lastLine()[0]
+        else:
+            lines = self.doc.rootElements[0].elementCount
+            for i in xrange(0,lines-1):
+                offsets = (self.doc.rootElements[0].getElement(i).startOffset, \
+                    self.doc.rootElements[0].getElement(i).endOffset)
+                line = self.doc.getText(offsets[0], offsets[1]-offsets[0])
+                if self.output.caretPosition >= offsets[0] and \
+                    self.output.caretPosition <= offsets[1]:
+                    if line.startswith(Console.PROMPT) or line.startswith(Console.PROCESS):
+                        self.output.caretPosition = offsets[0] + len(Console.PROMPT)
+                    else:
+                        self.output.caretPosition = offsets[0]
 
     def replaceRow(self, text):
         """ Replaces the last line of the textarea with text """
@@ -300,7 +300,7 @@ class Console:
     def printPrompt(self):
         """ Prints the prompt """
         self.__addOutput(self.infoColor, "\n" + Console.PROMPT)
-		
+        
     def __addOutput(self, color, msg):
         """ Adds the output to the text area using a given color """
         from javax.swing.text import BadLocationException
@@ -344,19 +344,19 @@ class Console:
 
 
 class ActionDelegator(TextAction):
-	"""
-		Class action delegator encapsulates a TextAction delegating the action
-		event to a simple function
-	"""
-	def __init__(self, name, delegate):
-		TextAction.__init__(self, name)
-		self.delegate = delegate
+    """
+        Class action delegator encapsulates a TextAction delegating the action
+        event to a simple function
+    """
+    def __init__(self, name, delegate):
+        TextAction.__init__(self, name)
+        self.delegate = delegate
 
-	def actionPerformed(self, event):
-		if isinstance(self.delegate, Action):
-			self.delegate.actionPerformed(event)
-		else:
-			self.delegate(event)
+    def actionPerformed(self, event):
+        if isinstance(self.delegate, Action):
+            self.delegate.actionPerformed(event)
+        else:
+            self.delegate(event)
 
 class Interpreter(InteractiveInterpreter):
     def __init__(self, console, locals):

@@ -26,30 +26,30 @@ class History:
 
     def __init__(self, console):
         self.history = []
-	self.console = console
-	self.index = 0
-	self.last = ""
+        self.console = console
+        self.index = 0
+        self.last = ""
 
     def append(self, line):
         if line == '\n' or len(line) == 0: return
-## 	if line == self.last: # avoid duplicates
-## 	    self.index = len(self.history) - 1
+##  if line == self.last: # avoid duplicates
+##      self.index = len(self.history) - 1
 ##          return
-		
-	self.last = line
-	self.history.append(line)
-	self.index = len(self.history) - 1
+        
+        self.last = line
+        self.history.append(line)
+        self.index = len(self.history) - 1
 
     def historyUp(self, event):
         if len(self.history) > 0 and self.console.inLastLine():
-	    self.console.replaceRow(self.history[self.index])
-	    self.index = max(self.index - 1, 0)
+            self.console.replaceRow(self.history[self.index])
+            self.index = max(self.index - 1, 0)
 
     def historyDown(self, event):
         if len(self.history) > 0 and self.console.inLastLine():
-	    if self.index == len(self.history) - 1:
-	        self.console.replaceRow("")
-	    else:
-	        self.index += 1
-	        self.console.replaceRow(self.history[self.index])
+            if self.index == len(self.history) - 1:
+                self.console.replaceRow("")
+            else:
+                self.index += 1
+                self.console.replaceRow(self.history[self.index])
 
