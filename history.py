@@ -31,21 +31,20 @@ class History:
         self.last = ""
 
     def append(self, line):
-        if line == '\n' or len(line) == 0: return
-##  if line == self.last: # avoid duplicates
-##      self.index = len(self.history) - 1
-##          return
-        
-        self.last = line
-        self.history.append(line)
+        if line == None or line == '\n' or len(line) == 0:
+            return
+
+        if line != self.last: # avoids duplicates
+            self.last = line
+            self.history.append(line)
         self.index = len(self.history) - 1
 
-    def historyUp(self, event):
+    def historyUp(self, event=None):
         if len(self.history) > 0 and self.console.inLastLine():
             self.console.replaceRow(self.history[self.index])
             self.index = max(self.index - 1, 0)
 
-    def historyDown(self, event):
+    def historyDown(self, event=None):
         if len(self.history) > 0 and self.console.inLastLine():
             if self.index == len(self.history) - 1:
                 self.console.replaceRow("")
