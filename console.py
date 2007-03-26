@@ -56,40 +56,7 @@ class Console:
         sys.stdout = StdOutRedirector(self)
 
         self.text_pane = JTextPane(keyTyped = self.keyTyped, keyPressed = self.keyPressed)
-
-        os_name = os.path.System.getProperty("os.name")
-        if os_name.startswith("Win"):
-            exit_key = KeyEvent.VK_Z
-        else:
-            exit_key = KeyEvent.VK_D
-
-        keyBindings = [
-            (KeyEvent.VK_ENTER, 0, "jython.enter", self.enter),
-            (KeyEvent.VK_DELETE, 0, "jython.delete", self.delete),
-            (KeyEvent.VK_HOME, 0, "jython.home", self.home),
-            (KeyEvent.VK_LEFT, InputEvent.META_DOWN_MASK, "jython.home", self.home),
-            (KeyEvent.VK_UP, 0, "jython.up", self.history.historyUp),
-            (KeyEvent.VK_DOWN, 0, "jython.down", self.history.historyDown),
-            (KeyEvent.VK_PERIOD, 0, "jython.showPopup", self.showPopup),
-            (KeyEvent.VK_ESCAPE, 0, "jython.hide", self.hide),
-
-            ('(', 0, "jython.showTip", self.showTip),
-            (')', 0, "jython.hideTip", self.hideTip),
-            (exit_key, InputEvent.CTRL_MASK, "jython.exit", self.quit),
-            (KeyEvent.VK_SPACE, InputEvent.CTRL_MASK, "jython.showPopup", self.showPopup),
-            (KeyEvent.VK_SPACE, 0, "jython.space", self.spaceTyped),
-
-            # Mac/Emacs keystrokes
-            (KeyEvent.VK_A, InputEvent.CTRL_MASK, "jython.home", self.home),
-            (KeyEvent.VK_E, InputEvent.CTRL_MASK, "jython.end", self.end),
-            (KeyEvent.VK_K, InputEvent.CTRL_MASK, "jython.killToEndLine", self.killToEndLine),
-            (KeyEvent.VK_Y, InputEvent.CTRL_MASK, "jython.paste", self.paste),
-            ]
-
-        keymap = JTextComponent.addKeymap("jython", self.text_pane.keymap)
-        for (key, modifier, name, function) in keyBindings:
-            keymap.addActionForKeyStroke(KeyStroke.getKeyStroke(key, modifier), ActionDelegator(name, function))        
-        self.text_pane.keymap = keymap
+        self.__initKeyMap()
 
         self.doc = self.text_pane.document
         self.__propertiesChanged()
@@ -331,6 +298,41 @@ class Console:
         self.printPrompt()
         self.text_pane.requestFocus()
 
+    def __initKeyMap(self):
+        os_name = os.path.System.getProperty("os.name")
+        if os_name.startswith("Win"):
+            exit_key = KeyEvent.VK_Z
+        else:
+            exit_key = KeyEvent.VK_D
+
+        keyBindings = [
+            (KeyEvent.VK_ENTER, 0, "jython.enter", self.enter),
+            (KeyEvent.VK_DELETE, 0, "jython.delete", self.delete),
+            (KeyEvent.VK_HOME, 0, "jython.home", self.home),
+            (KeyEvent.VK_LEFT, InputEvent.META_DOWN_MASK, "jython.home", self.home),
+            (KeyEvent.VK_UP, 0, "jython.up", self.history.historyUp),
+            (KeyEvent.VK_DOWN, 0, "jython.down", self.history.historyDown),
+            (KeyEvent.VK_PERIOD, 0, "jython.showPopup", self.showPopup),
+            (KeyEvent.VK_ESCAPE, 0, "jython.hide", self.hide),
+
+            ('(', 0, "jython.showTip", self.showTip),
+            (')', 0, "jython.hideTip", self.hideTip),
+            (exit_key, InputEvent.CTRL_MASK, "jython.exit", self.quit),
+            (KeyEvent.VK_SPACE, InputEvent.CTRL_MASK, "jython.showPopup", self.showPopup),
+            (KeyEvent.VK_SPACE, 0, "jython.space", self.spaceTyped),
+
+            # Mac/Emacs keystrokes
+            (KeyEvent.VK_A, InputEvent.CTRL_MASK, "jython.home", self.home),
+            (KeyEvent.VK_E, InputEvent.CTRL_MASK, "jython.end", self.end),
+            (KeyEvent.VK_K, InputEvent.CTRL_MASK, "jython.killToEndLine", self.killToEndLine),
+            (KeyEvent.VK_Y, InputEvent.CTRL_MASK, "jython.paste", self.paste),
+            ]
+
+        keymap = JTextComponent.addKeymap("jython", self.text_pane.keymap)
+        for (key, modifier, name, function) in keyBindings:
+            keymap.addActionForKeyStroke(KeyStroke.getKeyStroke(key, modifier), ActionDelegator(name, function))
+        self.text_pane.keymap = keymap
+        
     def __lastLine(self):
         """ Returns the char offests of the last line """
         lines = self.doc.rootElements[0].elementCount
