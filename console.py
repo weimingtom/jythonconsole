@@ -28,17 +28,29 @@ import re
 # allows multiple imports like "from java.lang import String, Properties"
 _re_from_import = re.compile("from\s+\S+\s+import(\s+\S+,\s?)?")
 
+try:
+    True, False
+except NameError:
+    (True, False) = (1, 0)
+
 class Console:
     PROMPT = sys.ps1
     PROCESS = sys.ps2
     BANNER = ["Jython Completion Shell", InteractiveConsole.getDefaultBanner()]
 
-    def __init__(self):
-
+    def __init__(self, namespace=None):
+        """
+            Create a Jython Console.
+            namespace is an optional and should be a dictionary or Map
+        """
         self.history = History(self)
 
-        self.buffer = [] # buffer for multi-line commands        
-        self.locals = {}
+        if namespace != None:
+            self.locals = namespace
+        else:
+            self.locals = {}
+
+        self.buffer = [] # buffer for multi-line commands                    
 
         self.interp = Interpreter(self, self.locals)
         sys.stdout = StdOutRedirector(self)
@@ -162,7 +174,7 @@ class Console:
                 self.popup.showMethodCompletionList(list, self.getDisplayPoint())
 
         except Exception, e:
-            print >> sys.stderr, "Error getting completion list", e
+            print >> sys.stderr, "Error getting completion list: ", e
 
     def inLastLine(self, include = 1):
         """ Determines whether the cursor is in the last line """
@@ -385,9 +397,13 @@ class KillListener(WindowAdapter):
     def windowClosed(self, evt):
         import java.lang.System as System
         System.exit(0)
+        
+def main(namespace=None):
+    frame = JythonFrame()
+    console = Console(namespace)
+    frame.getContentPane().add(JScrollPane(console.text_pane))
+    frame.visible = True
 
 if __name__ == "__main__":
-    frame = JythonFrame()
-    console = Console()
-    frame.getContentPane().add(JScrollPane(console.text_pane))
-    frame.show()
+    main()
+    
