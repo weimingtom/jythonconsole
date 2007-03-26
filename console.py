@@ -37,6 +37,9 @@ class Console:
     PROMPT = sys.ps1
     PROCESS = sys.ps2
     BANNER = ["Jython Completion Shell", InteractiveConsole.getDefaultBanner()]
+  
+    include_single_underscore_methods = False
+    include_double_underscore_methods = False
 
     def __init__(self, namespace=None):
         """
@@ -135,13 +138,14 @@ class Console:
         """show code completion popup"""
 
         try:
-            line = self.getText()                
-            list = jintrospect.getAutoCompleteList(line, self.locals)
+            line = self.getText()
+            list = jintrospect.getAutoCompleteList(line, self.locals, includeSingle=self.include_single_underscore_methods, includeDouble=self.include_double_underscore_methods)
             if len(list) > 0:
                 self.popup.showMethodCompletionList(list, self.getDisplayPoint())
 
         except Exception, e:
             print >> sys.stderr, "Error getting completion list: ", e
+            traceback.print_exc(file=sys.stderr)
 
     def inLastLine(self, include = 1):
         """ Determines whether the cursor is in the last line """
