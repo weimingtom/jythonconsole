@@ -43,13 +43,13 @@ class JIntrospectTestCase(unittest.TestCase):
 
         self.assert_(jintrospect.ispython(jintrospect))
 
-        # ideally this would pass
-        #ps = "python string"
-        #self.assert_(jintrospect.ispython(ps))
+    def testIsPython22(self):
+        # NOTE: This will fail with AP 2.1.  Would it fail for old version too?             
+        ps = "python string"
+        self.assert_(jintrospect.ispython(ps))
 
-        # ideally this would pass                
-        #d = {}
-        #self.assert_(jintrospect.ispython(d))
+        d = {}
+        self.assert_(jintrospect.ispython(d))
 
 
     # note: static methods and fields are tested in static_test_case

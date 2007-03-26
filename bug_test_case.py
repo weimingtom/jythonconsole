@@ -1,6 +1,7 @@
 import unittest
 import sys
 import introspect
+import jintrospect
 
 class BugTestCase(unittest.TestCase):
 
@@ -37,6 +38,13 @@ class BugTestCase(unittest.TestCase):
         # if the bug is happening you'll never get here
         # you'll get a stack overflow instead    
         self.assert_(len(dict) > 0)
+
+    # method completion for python strings was failing in 0.0.2 with python2.b1
+    def testAutoCompleteString(self):
+        f = "foo"
+        list = jintrospect.getAutoCompleteList("f", locals())
+        self.assert_(len(list) > 0)
+        self.assert_(list.index("startswith") > 0)
 
 if __name__ == '__main__':
     unittest.main()

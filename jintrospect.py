@@ -57,7 +57,7 @@ def unique(methods):
         if not u.has_key(method.__name__):
             u[method.__name__] = 1
             umethods.append(method)
-    
+        
     return umethods
 
 def getAutoCompleteList(command='', locals=None, includeMagic=1, 
@@ -65,7 +65,7 @@ def getAutoCompleteList(command='', locals=None, includeMagic=1,
     """Return list of auto-completion options for command.
     
     The list of options will be based on the locals namespace."""
-    debug("getAutoCompleteList '%s'" % command) 
+    #debug("getAutoCompleteList '%s'" % command) 
 
     # Temp KLUDGE here rather than in console.py
     command += "."
@@ -223,8 +223,9 @@ def getCallTipJava(command='', locals=None):
 
     calltip = (name, argspec, string.join(tipList,"\n"))
     return calltip
-                                      
-def ispython(object):
+
+
+def ispython21(object):
     """
     Figure out if this is Python code or Java Code
 
@@ -232,7 +233,7 @@ def ispython(object):
     pyclass = 0
     pycode = 0
     pyinstance = 0
-    
+
     if inspect.isclass(object):
         try:
             object.__doc__
@@ -253,7 +254,38 @@ def ispython(object):
         except AttributeError:
             pyinstance = 0
 
-#    print "object", object, "pyclass", pyclass, "pycode", pycode, "returning", pyclass | pycode
-    
+    #    print "object", object, "pyclass", pyclass, "pycode", pycode, "returning", pyclass | pycode
+
     return pyclass | pycode | pyinstance
 
+
+def ispython22(object):
+    """
+    Return true if object is Python code.    
+    """
+
+    object_type = type(object)
+
+    if object_type.__name__.startswith("java"):
+        python = False
+
+    elif object_type is types.MethodType:
+        # both Java and Python methods return MethodType
+        try:
+            object.__dict__
+            python = True
+        except AttributeError:
+            python = False
+    else:
+        # assume everything else is python
+        python = True
+
+    return python
+
+
+# Looks like the reflection stuff changed from 2.1 to 2.2b1
+# Dynamically assign the version of ispython
+if sys.version == '2.1':
+    ispython = ispython21
+else:
+    ispython = ispython22    
