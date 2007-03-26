@@ -66,7 +66,10 @@ def getAutoCompleteList(command='', locals=None, includeMagic=1,
     
     The list of options will be based on the locals namespace."""
     debug("getAutoCompleteList '%s'" % command) 
-    
+
+    # Temp KLUDGE here rather than in console.py
+    command += "."
+
     attributes = []
     # Get the proper chunk of code from the command.
     root = getRoot(command, terminator='.')

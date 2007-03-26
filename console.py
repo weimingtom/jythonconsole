@@ -55,39 +55,30 @@ class Console:
             (KeyEvent.VK_ENTER, 0, "jython.enter", self.enter),
             (KeyEvent.VK_DELETE, 0, "jython.delete", self.delete),
             (KeyEvent.VK_HOME, 0, "jython.home", self.home),
-            (KeyEvent.VK_LEFT, InputEvent.META_DOWN_MASK, "jython.home", self.home),                 
+            (KeyEvent.VK_LEFT, InputEvent.META_DOWN_MASK, "jython.home", self.home),
             (KeyEvent.VK_UP, 0, "jython.up", self.history.historyUp),
             (KeyEvent.VK_DOWN, 0, "jython.down", self.history.historyDown),
             (KeyEvent.VK_PERIOD, 0, "jython.showPopup", self.showPopup),
-            (KeyEvent.VK_ESCAPE, 0, "jython.hide", self.hide),                   
-            
+            (KeyEvent.VK_ESCAPE, 0, "jython.hide", self.hide),
+
             ('(', 0, "jython.showTip", self.showTip),
             (')', 0, "jython.hideTip", self.hideTip),
-            (exit_key, InputEvent.CTRL_MASK, "jython.exit", self.quit),   
-            (KeyEvent.VK_SPACE, InputEvent.CTRL_MASK, "jython.showPopup", self.showPopup),    
-            (KeyEvent.VK_SPACE, 0, "jython.space", self.spaceTyped),   
-
-            # TODO
-            #(KeyEvent.VK_BACK_SPACE, 0, "jython.backspace", self.backSpaceTyped),
-            #(KeyEvent.VK_LEFT, 0, "jython.leftArrow", self.backSpaceTyped),                              
+            (exit_key, InputEvent.CTRL_MASK, "jython.exit", self.quit),
+            (KeyEvent.VK_SPACE, InputEvent.CTRL_MASK, "jython.showPopup", self.showPopup),
+            (KeyEvent.VK_SPACE, 0, "jython.space", self.spaceTyped),
 
             # Mac/Emacs keystrokes
             (KeyEvent.VK_A, InputEvent.CTRL_MASK, "jython.home", self.home),
-            (KeyEvent.VK_E, InputEvent.CTRL_MASK, "jython.end", self.end),                        
+            (KeyEvent.VK_E, InputEvent.CTRL_MASK, "jython.end", self.end),
             (KeyEvent.VK_K, InputEvent.CTRL_MASK, "jython.killToEndLine", self.killToEndLine),
             (KeyEvent.VK_Y, InputEvent.CTRL_MASK, "jython.paste", self.paste),
-
-            
-            # TODO CTRL/COMMAND + UP and DOWN should be mapped to normal up and down arrow functions
-            #(KeyEvent.VK_UP, InputEvent.CTRL_MASK, DefaultEditorKit.upAction, self.text_pane.keymap.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0))),
-            #(KeyEvent.VK_DOWN, InputEvent.CTRL_MASK, DefaultEditorKit.downAction, self.text_pane.keymap.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0)))
             ]
 
         keymap = JTextComponent.addKeymap("jython", self.text_pane.keymap)
         for (key, modifier, name, function) in keyBindings:
             keymap.addActionForKeyStroke(KeyStroke.getKeyStroke(key, modifier), ActionDelegator(name, function))        
         self.text_pane.keymap = keymap
-                
+
         self.doc = self.text_pane.document
         self.__propertiesChanged()
         self.__inittext()
@@ -125,6 +116,7 @@ class Console:
         """Get the point where the popup window should be displayed"""
         screenPoint = self.text_pane.getLocationOnScreen()
         caretPoint = self.text_pane.caret.getMagicCaretPosition()
+
         # BUG: sometimes caretPoint is None
         # To duplicate type "java.aw" and hit '.' to complete selection while popup is visible
 
@@ -153,41 +145,24 @@ class Console:
         
         line = self.getText()
 
-        # introspect is expecting a trailing '('
-        line += '('
-
         self.insertText('(')
         
         (name, argspec, tip) = jintrospect.getCallTipJava(line, self.locals)
 
         if tip:
-            self.tip.setLocation(displayPoint)
-            self.tip.setText(tip)
-            self.tip.show()
+            self.tip.showTip(tip, displayPoint)
             
     def showPopup(self, event=None):
         """show code completion popup"""
-        line = self.getText()
 
-        # this is silly, I have to add the '.' and the other code removes it.
-        line = line + '.'
-        # TODO get this code into Popup
-        # TODO handle errors gracefully
         try:
+            line = self.getText()                
             list = jintrospect.getAutoCompleteList(line, self.locals)
+            if len(list) > 0:
+                self.popup.showMethodCompletionList(list, self.getDisplayPoint())
+
         except Exception, e:
-            print >> sys.stderr, e
-            return
-
-        if len(list) == 0:
-            #print >> sys.stderr, "list was empty"
-            return
-
-        self.popup.setLocation(self.getDisplayPoint())
-
-        self.popup.setMethods(list)
-        self.popup.show()
-        self.popup.list.setSelectedIndex(0)
+            print >> sys.stderr, "Error getting completion list", e
 
     def inLastLine(self, include = 1):
         """ Determines whether the cursor is in the last line """

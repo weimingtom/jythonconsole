@@ -1,9 +1,10 @@
 from java.lang import Character
-from javax.swing import JWindow, JList, JScrollPane
+from javax.swing import JWindow, JList, JScrollPane, SwingUtilities
 from java.awt import Color, Dimension
 from java.awt.event import KeyAdapter
 from java.awt.event import KeyEvent
 import string
+import sys
 
 __author__ = "Don Coleman <dcoleman@chariotsolutions.com>"
 __cvsid__ = "$Id: popup.py,v 1.9 2003/05/01 03:43:53 dcoleman Exp $"
@@ -29,10 +30,11 @@ class Popup(JWindow):
         self.typed = ""
 
     def key(self, e):
-        # key listener
-        #print "Other Listener"
+        # print >> sys.stderr, "Other Listener"
+        if not self.visible:
+            return
+
         code = e.getKeyCode()
-        #print 'keychar:',e.getKeyChar()
         
         if code == KeyEvent.VK_ESCAPE:
             self.hide()
@@ -48,7 +50,8 @@ class Popup(JWindow):
 
         elif code == KeyEvent.VK_PERIOD:
             self.chooseSelected()
-
+            #e.consume()
+            
         # This fails because the key listener in console gets it first
         elif code == KeyEvent.VK_LEFT_PARENTHESIS:
             self.chooseSelected()
@@ -97,7 +100,6 @@ class Popup(JWindow):
     def chooseSelected(self):
         """Choose the selected value in the list"""
         value = self.list.getSelectedValue()
-        # TODO There is a timing issue here. try invokeLater()
         if value != None:
             startPosition = self.dotPosition + 1
             caretPosition = self.textComponent.getCaretPosition()
@@ -119,6 +121,12 @@ class Popup(JWindow):
         self.dotPosition = self.textComponent.getCaretPosition()
         self.setSize(self.getPreferredSize())
         JWindow.show(self)
+
+    def showMethodCompletionList(self, list, displayPoint):
+        self.setLocation(displayPoint)
+        self.setMethods(list)
+        self.show()
+        self.list.setSelectedIndex(0)
 
     def getPreferredSize(self):
         # need to add a magic amount to the size to avoid scrollbars

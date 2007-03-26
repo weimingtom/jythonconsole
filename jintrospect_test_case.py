@@ -6,13 +6,13 @@ class JIntrospectTestCase(unittest.TestCase):
 
     def testGetAutoCompleteList(self):
         s = String("Unit Test")
-        list = jintrospect.getAutoCompleteList("s.", locals())
+        list = jintrospect.getAutoCompleteList("s", locals())
         self.assertNotEmpty(list)
         self.assertContains(list, "contains")
 
     def testGetCallTipJava(self):
         s = String("Unit Test")
-        tip = jintrospect.getCallTipJava("s.contains(", locals())
+        tip = jintrospect.getCallTipJava("s.contains", locals())
         self.assertEquals("contains(java.lang.CharSequence) -> boolean", tip[2])
 
     def testGetPackageName(self):
