@@ -9,6 +9,7 @@ from javax.swing import JFrame, JScrollPane, JWindow, JTextPane, Action, KeyStro
 from javax.swing.text import JTextComponent, TextAction, SimpleAttributeSet, StyleConstants, DefaultEditorKit
 from java.awt import Color, Font, FontMetrics, Point
 from java.awt.event import  InputEvent, KeyEvent, WindowAdapter
+from java.lang import System
 
 import jintrospect
 from jintrospect import debug
@@ -145,7 +146,7 @@ class Console:
 
         except Exception, e:
             print >> sys.stderr, "Error getting completion list: ", e
-            traceback.print_exc(file=sys.stderr)
+            #traceback.print_exc(file=sys.stderr)
 
     def inLastLine(self, include = 1):
         """ Determines whether the cursor is in the last line """
@@ -303,7 +304,7 @@ class Console:
         self.text_pane.requestFocus()
 
     def __initKeyMap(self):
-        os_name = os.path.System.getProperty("os.name")
+        os_name = System.getProperty("os.name")
         if os_name.startswith("Win"):
             exit_key = KeyEvent.VK_Z
         else:
