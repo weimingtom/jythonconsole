@@ -10,23 +10,6 @@ Sometimes introspect.getAllAttributeNames goes into an infine recursive loop
 
 python.security.respectJavaAccessibility must be set to true in Jython's registry (this is the default setting)
 
-==========================
-Fixed in 0.0.3
-==========================
+--
 
-Method popup gets abandoned with too many backspaces.  (Use <ESC> to make it go away)
-
-History doesn't quite work correctly
-
-==========================
-Fixed in 0.0.2
-==========================
-
-You can't insert '(' and ')' in the middle of a line [ FIXED r8 ]
-
-Method popup displays names multiple times for overloaded methods [ FIXED r9 Harry Fuecks ]
-
-Static methods and properties don't seem to work correctly. [ FIXED r10, r11, r16 ]
-
-<CTRL>+D (or <CRTL>+Z) to exit is not implemented [ FIXED r16 ]
-
+Please submit any new issues http://code.google.com/p/jythonconsole/issues/list 

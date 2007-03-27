@@ -15,6 +15,8 @@ DIST=jythonconsole-${VERSION}
 mkdir ${DIST}
 cp *.py ${DIST}
 cp problems.txt ${DIST} 
+cp README.txt ${DIST} 
+cp COPYING.txt ${DIST} 
 zip ${DIST}.zip ${DIST}/*
 rm -fr ${DIST}
 echo Created ${DIST}.zip
