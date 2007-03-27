@@ -13,7 +13,7 @@ Hints:
   * <ESC> makes the popup go away
 
 Author:
-  Don Coleman
+  Don Coleman <dcoleman@chariotsolutions.com>
 
 License:
   Read the COPYING.txt file.
