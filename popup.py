@@ -57,7 +57,10 @@ class Popup(JWindow):
             self.chooseSelected()
 
         elif code == 8: # BACKSPACE
+            if len(self.typed) == 0:
+                self.hide()
             self.typed = self.typed[:-1]
+            print >> sys.stderr, self.typed
             self.data = filter(self.originalData, self.typed)
             self.list.setListData(self.data)
             self.list.setSelectedIndex(0)
