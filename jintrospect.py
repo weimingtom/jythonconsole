@@ -172,11 +172,7 @@ def getCallTipJava(command='', locals=None):
     tipList = []
     argspec = '' # not using argspec for Java
     
-    if inspect.isbuiltin(object):
-        # inspect.isbuiltin() fails for Jython
-        # Can we get the argspec for Jython builtins?  We can't in Python.
-        pass
-    elif inspect.isclass(object):
+    if inspect.isclass(object):
         # get the constructor(s)
         # TODO consider getting modifiers since jython can access private methods
         constructors = object.getConstructors()
