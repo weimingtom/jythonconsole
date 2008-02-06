@@ -66,15 +66,23 @@ class Popup(JWindow):
             self.list.setSelectedIndex(0)
                 
         elif code == KeyEvent.VK_UP:
-            self.previous()
+            self.up()
             # consume event to avoid history previous
             e.consume()
             
         elif code == KeyEvent.VK_DOWN:
-            self.next()
+            self.down()
             # consume event to avoid history next
             e.consume()
             
+        elif code == KeyEvent.VK_PAGE_UP:
+            self.pageUp()
+            e.consume()
+
+        elif code == KeyEvent.VK_PAGE_DOWN:
+            self.pageDown()
+            e.consume()
+
         else:
             char = e.getKeyChar()
             if Character.isJavaLetterOrDigit(char):
@@ -83,22 +91,39 @@ class Popup(JWindow):
                 self.list.setListData(self.data)
                 self.list.setSelectedIndex(0)
                 
-    def next(self):
+    def down(self):
         index = self.list.getSelectedIndex()
-        max = (self.list.getModel().getSize() - 1)
+        max = self.getSize() - 1
         
         if index < max:
             index += 1
-            self.list.setSelectedIndex(index)
-            self.list.ensureIndexIsVisible(index)
+            self.setSelected(index)
         
-    def previous(self):
+    def up(self):
         index = self.list.getSelectedIndex()
 
         if index > 0:
             index -= 1
-            self.list.setSelectedIndex(index)
-            self.list.ensureIndexIsVisible(index)
+            self.setSelected(index)
+
+    def pageUp(self):
+        index = self.list.getSelectedIndex()
+        visibleRows = self.list.getVisibleRowCount()
+        index = max(index - visibleRows, 0)
+        self.setSelected(index)
+
+    def pageDown(self):
+        index = self.list.getSelectedIndex()
+        visibleRows = self.list.getVisibleRowCount()
+        index = min(index + visibleRows, self.getSize() - 1)
+        self.setSelected(index)
+
+    def setSelected(self, index):
+        self.list.setSelectedIndex(index)
+        self.list.ensureIndexIsVisible(index)
+
+    def getSize(self):
+        return self.list.getModel().getSize()
 
     def chooseSelected(self):
         """Choose the selected value in the list"""
