@@ -221,7 +221,8 @@ class Console:
 
     def backSpaceListener(self, event=None):
         """ Don't allow backspace or left arrow to go over prompt """
-        if self.text_pane.getCaretPosition() <= self.__lastLine()[0]:
+        onFirstPosition = self.text_pane.getCaretPosition() <= self.__lastLine()[0]
+        if onFirstPosition and not self.text_pane.selectedText:
             event.consume()
                                        
     def spaceTyped(self, event=None):
