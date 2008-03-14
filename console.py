@@ -22,6 +22,7 @@ import sys
 import traceback
 from code import InteractiveInterpreter
 from org.python.util import InteractiveConsole
+from exceptions import KeyboardInterrupt
 
 __author__ = "Don Coleman <dcoleman@chariotsolutions.com>"
 
@@ -253,6 +254,13 @@ class Console:
         #print >> sys.stderr, "keyPressed", event.getKeyCode()
         if event.keyCode == KeyEvent.VK_BACK_SPACE or event.keyCode == KeyEvent.VK_LEFT:
             self.backSpaceListener(event)
+
+    def keyboardInterrupt(self, event=None):
+        """ Raises a KeyboardInterrupt"""
+        self.hide()
+        self.interp.runsource("raise KeyboardInterrupt\n")
+        self.resetbuffer()
+        self.printPrompt()
                 
     # TODO refactor me
     def write(self, text):
@@ -308,8 +316,10 @@ class Console:
         os_name = System.getProperty("os.name")
         if os_name.startswith("Win"):
             exit_key = KeyEvent.VK_Z
+            keyboard_interrupt_key = KeyEvent.BREAK
         else:
             exit_key = KeyEvent.VK_D
+            interrupt_key = KeyEvent.VK_C
 
         keyBindings = [
             (KeyEvent.VK_ENTER, 0, "jython.enter", self.enter),
@@ -332,6 +342,8 @@ class Console:
             (KeyEvent.VK_E, InputEvent.CTRL_MASK, "jython.end", self.end),
             (KeyEvent.VK_K, InputEvent.CTRL_MASK, "jython.killToEndLine", self.killToEndLine),
             (KeyEvent.VK_Y, InputEvent.CTRL_MASK, "jython.paste", self.paste),
+            
+            (interrupt_key, InputEvent.CTRL_MASK, "jython.keyboardInterrupt", self.keyboardInterrupt),
             ]
 
         keymap = JTextComponent.addKeymap("jython", self.text_pane.keymap)
