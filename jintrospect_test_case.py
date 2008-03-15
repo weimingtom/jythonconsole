@@ -59,8 +59,7 @@ class JIntrospectTestCase(unittest.TestCase):
 
     def testJavaAccessorAsProperty(self):
         instance_methods = jintrospect.getAutoCompleteList("s", {"s" : String("Test")})
-        self.assert_("class" in instance_methods, "'class' property should in the instance method list")
-
+        self.assert_("class" in instance_methods, "'class' property should be in the instance method list")
 
     # http://code.google.com/p/jythonconsole/issues/detail?id=2
     # def testMultipleStatements(self):

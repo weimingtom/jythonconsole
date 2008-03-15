@@ -47,12 +47,11 @@ def getPackageName(command):
             
     return match.groups()[0]
 
-def getAutoCompleteList(command='', locals=None, includeMagic=1, 
-                        includeSingle=1, includeDouble=1):
-    """Return list of auto-completion options for command.
-    
-    The list of options will be based on the locals namespace."""
-    #debug("getAutoCompleteList '%s'" % command) 
+def getAutoCompleteList(command='', locals=None, includeMagic=1, includeSingle=1, includeDouble=1):
+    """
+    Return list of auto-completion options for command.
+    The list of options will be based on the locals namespace.
+    """
 
     # Temp KLUDGE here rather than in console.py
     command += "."
@@ -75,38 +74,39 @@ def getAutoCompleteList(command='', locals=None, includeMagic=1,
     except:
         return attributes
     
-    if ispython(object):
-        # use existing code
+    if ispython(object):  # use existing code
         attributes = getAttributeNames(object, includeMagic, includeSingle, includeDouble)
     else:
         if type(object) == PyJavaClass:
             attributes = staticMethodNames(object)
             attributes.extend(staticFieldNames(object))
         else:
-            methods = methodsOf(object.__class__)
-            method_names = Set()
-            for method in methods:
-                name = method.__name__
-                method_names.add(name)
-                # adding "propery" for getters e.g. foo for getFoo()
-                if name.startswith("get") and len(name) > 3 and method.nargs > 0:
-                    method_names.add(name[3].lower() + name[4:])          
-            
-            # get static method names so that we can hide them
-            static_names = staticMethodNames(object.__class__)
-            static_names.extend(staticFieldNames(object.__class__))
-            static_names = Set(static_names)            
-            
-            attribute_set = method_names - static_names
-            
-            attributes = list(attribute_set)
-            attributes.sort()
-        
+            attributes = list(instanceMethodNames(object.__class__))
+                    
     return attributes
+
+def instanceMethodNames(clazz):
+    """return a list of instance method name for a class"""
+
+    method_names = Set()
+    declared_methods = Class.getDeclaredMethods(clazz)
+    for method in declared_methods:
+        modifiers = method.getModifiers()
+        if not Modifier.isStatic(modifiers) and Modifier.isPublic(modifiers):
+            name = method.name            
+            method_names.add(name)
+            if name.startswith("get") and len(name) > 3 and len(method.getParameterTypes()) == 0:
+                property_name = name[3].lower() + name[4:]
+                method_names.add(property_name)                
+                                      
+    for eachBase in clazz.__bases__:
+        method_names = method_names | instanceMethodNames(eachBase)
+
+    return method_names
 
 def staticMethodNames(clazz):
     """return a list of static method name for a class"""
-    # TODO get static methods from base classes
+
     static_methods = {}
     declared_methods = Class.getDeclaredMethods(clazz)
     for method in declared_methods:
@@ -121,7 +121,7 @@ def staticMethodNames(clazz):
     
 def staticFieldNames(clazz):
     """return a list of static field names for class"""
-    # TODO get static fields from base classes
+
     static_fields = {}
     declared_fields = Class.getDeclaredFields(clazz)
     for field in declared_fields:
@@ -133,14 +133,6 @@ def staticFieldNames(clazz):
          fields.extend(staticFieldNames(eachBase)) 
 
     return fields        
-
-def methodsOf(clazz):
-    """return a list of all the methods in a class"""
-    classMembers = vars(clazz).values()
-    methods = [eachMember for eachMember in classMembers if callable(eachMember)]
-    for eachBase in clazz.__bases__:
-        methods.extend(methodsOf(eachBase))
-    return methods
 
 def getCallTipJava(command='', locals=None):
     """For a command, return a tuple of object name, argspec, tip text.
@@ -216,9 +208,6 @@ def getCallTipJava(command='', locals=None):
                 tip = "%s(%s) -> %s" % (eachMethod.name, paramString, eachMethod.returnType)
                 tipList.append(tip)
             
-#    else:
-#        print "Not a java class :("
-
     calltip = (name, argspec, string.join(tipList,"\n"))
     return calltip
 
