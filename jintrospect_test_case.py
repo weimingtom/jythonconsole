@@ -47,10 +47,26 @@ class JIntrospectTestCase(unittest.TestCase):
         # NOTE: This will fail with AP 2.1.  Would it fail for old version too?             
         ps = "python string"
         self.assert_(jintrospect.ispython(ps))
-
         d = {}
         self.assert_(jintrospect.ispython(d))
+        
+    def testStaticJavaMethods(self):
+        """ Instances of Java classes should not show static methods as completion choices. """
+        static_methods = jintrospect.getAutoCompleteList("String", {"String" : String})
+        self.assert_("valueOf" in static_methods, "'valueOf' missing from static method list")
+        instance_methods = jintrospect.getAutoCompleteList("s", {"s" : String("Test")})
+        self.assert_("valueOf" not in instance_methods, "'valueOf' should not be in the instance method list")
 
+    def testJavaAccessorAsProperty(self):
+        instance_methods = jintrospect.getAutoCompleteList("s", {"s" : String("Test")})
+        self.assert_("class" in instance_methods, "'class' property should in the instance method list")
+
+
+    # http://code.google.com/p/jythonconsole/issues/detail?id=2
+    # def testMultipleStatements(self):
+    #     command = "import sys; sys"
+    #     list = jintrospect.getAutoCompleteList(command, locals())
+    #     self.assert_(len(list) > 0)
 
     # note: static methods and fields are tested in static_test_case
 

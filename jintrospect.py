@@ -5,6 +5,7 @@ from java.lang import Class
 from java.lang.reflect import Modifier
 from java.util.logging import Logger
 from introspect import *
+from sets import Set
 import string
 import re
 import types
@@ -46,20 +47,6 @@ def getPackageName(command):
             
     return match.groups()[0]
 
-def unique(methods):
-    """
-    Return a unique list of methods
-    """
-    umethods = []
-    
-    u = {}
-    for method in methods:
-        if not u.has_key(method.__name__):
-            u[method.__name__] = 1
-            umethods.append(method)
-        
-    return umethods
-
 def getAutoCompleteList(command='', locals=None, includeMagic=1, 
                         includeSingle=1, includeDouble=1):
     """Return list of auto-completion options for command.
@@ -96,9 +83,24 @@ def getAutoCompleteList(command='', locals=None, includeMagic=1,
             attributes = staticMethodNames(object)
             attributes.extend(staticFieldNames(object))
         else:
-            # TODO hide static methods
-            methods = unique(methodsOf(object.__class__))
-            attributes = [eachMethod.__name__ for eachMethod in methods]
+            methods = methodsOf(object.__class__)
+            method_names = Set()
+            for method in methods:
+                name = method.__name__
+                method_names.add(name)
+                # adding "propery" for getters e.g. foo for getFoo()
+                if name.startswith("get") and len(name) > 3 and method.nargs > 0:
+                    method_names.add(name[3].lower() + name[4:])          
+            
+            # get static method names so that we can hide them
+            static_names = staticMethodNames(object.__class__)
+            static_names.extend(staticFieldNames(object.__class__))
+            static_names = Set(static_names)            
+            
+            attribute_set = method_names - static_names
+            
+            attributes = list(attribute_set)
+            attributes.sort()
         
     return attributes
 
