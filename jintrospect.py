@@ -16,13 +16,6 @@ _re_import_package = re.compile('import\s+(.+)\.') # import package
 # TODO need to check for a trailing '.'  example: "from java import lang." don't autocomplete on trailing '.'
 _re_from_package_import = re.compile('from\s+(\w+(?:\.\w+)*)\.?(?:\s*import\s*)?') # from package import class 
 
-# TODO replace this with something better!
-def debug(name, value=None):
-    if value == None:
-        print >> sys.stderr, name
-    else:
-        print >> sys.stderr, "%s = %s" % (name, value)
-
 def completePackageName(target):
     """ Get a package object given the full name."""      
     targetComponents = target.split('.')
@@ -86,7 +79,7 @@ def getAutoCompleteList(command='', locals=None, includeMagic=1, includeSingle=1
     return attributes
 
 def instanceMethodNames(clazz):
-    """return a list of instance method name for a class"""
+    """return a Set of instance method name for a Class"""
 
     method_names = Set()
     declared_methods = Class.getDeclaredMethods(clazz)
@@ -200,18 +193,30 @@ def getCallTipJava(command='', locals=None):
                 # create a python style string a la PyCrust
                 # we're showing the parameter type rather than the parameter name, since that's all I can get
                 # we need to show multiple methods for overloading
-                # TODO improve message format
-                # do we want to show the method visibility
-                # how about exceptions?
+                # do we want to show the method visibility?  how about exceptions?
                 # note: name, return type and exceptions same for EVERY overload method
 
-                tip = "%s(%s) -> %s" % (eachMethod.name, paramString, eachMethod.returnType)
+                tip = "%s(%s) -> %s" % (eachMethod.name, paramString, eachMethod.returnType)                    
                 tipList.append(tip)
-            
-    calltip = (name, argspec, string.join(tipList,"\n"))
+
+    tip_text = beautify(string.join(tipList,"\n"))
+    calltip = (name, argspec, tip_text)        
     return calltip
 
-
+def beautify(tip_text):
+    "Make the call tip text prettier"
+    tip_text = tip_text.replace("java.lang.", "")
+    if "[" in tip_text:
+        tip_text = tip_text.replace("[B", "byte[]")
+        tip_text = tip_text.replace("[S", "short[]")
+        tip_text = tip_text.replace("[I", "int[]")
+        tip_text = tip_text.replace("[J", "long[]")
+        tip_text = tip_text.replace("[F", "float[]")
+        tip_text = tip_text.replace("[D", "double[]")
+        tip_text = tip_text.replace("[Z", "boolean[]")
+        tip_text = tip_text.replace("[C", "char[]")
+    return tip_text
+    
 def ispython21(object):
     """
     Figure out if this is Python code or Java Code
@@ -275,4 +280,10 @@ def ispython22(object):
 if sys.version == '2.1':
     ispython = ispython21
 else:
-    ispython = ispython22    
+    ispython = ispython22
+    
+def debug(name, value=None):
+    if value == None:
+        print >> sys.stderr, name
+    else:
+        print >> sys.stderr, "%s = %s" % (name, value)

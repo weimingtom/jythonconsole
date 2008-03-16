@@ -13,7 +13,7 @@ class JIntrospectTestCase(unittest.TestCase):
     def testGetCallTipJava(self):
         s = String("Unit Test")
         tip = jintrospect.getCallTipJava("s.contains", locals())
-        self.assertEquals("contains(java.lang.CharSequence) -> boolean", tip[2])
+        self.assertEquals("contains(CharSequence) -> boolean", tip[2])
 
     def testGetPackageName(self):
         package_name = jintrospect.getPackageName("import java.")
@@ -60,6 +60,20 @@ class JIntrospectTestCase(unittest.TestCase):
     def testJavaAccessorAsProperty(self):
         instance_methods = jintrospect.getAutoCompleteList("s", {"s" : String("Test")})
         self.assert_("class" in instance_methods, "'class' property should be in the instance method list")
+        
+    def testJavaLangRemoved(self):
+        object_name, argspec, tip_text = jintrospect.getCallTip('String', {'String' : 's'})
+        self.assertDoesNotContain(tip_text, "java.lang.")
+        
+    def testPrimitiveArrayConversion(self):
+        """[B, [C and [I should be replaced"""        
+        object_name, argspec, tip_text = jintrospect.getCallTipJava('String', { 'String' : String })
+        self.assertDoesNotContain(tip_text, "[B")
+        self.assertDoesNotContain(tip_text, "[C")
+        self.assertDoesNotContain(tip_text, "[I")
+        self.assertContains(tip_text, "byte[]")
+        self.assertContains(tip_text, "char[]")
+        self.assertContains(tip_text, "int[]")
 
     # http://code.google.com/p/jythonconsole/issues/detail?id=2
     # def testMultipleStatements(self):
@@ -79,7 +93,15 @@ class JIntrospectTestCase(unittest.TestCase):
         try:
             list.index(value)
         except ValueError:
-            self.fail("list does not contain %s" % value)
+            self.fail("%s does not contain %s" % (type(list).__name__, value))
+
+    def assertDoesNotContain(self, list, value):
+        try:
+            list.index(value)
+            self.fail("%s should contain %s" % (type(list).__name__, value))            
+        except ValueError:
+            self.assert_(True)
+        
 
 if __name__ == '__main__':
     unittest.main()
