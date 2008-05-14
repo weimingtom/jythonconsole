@@ -316,7 +316,7 @@ class Console:
         os_name = System.getProperty("os.name")
         if os_name.startswith("Win"):
             exit_key = KeyEvent.VK_Z
-            keyboard_interrupt_key = KeyEvent.BREAK
+            interrupt_key = KeyEvent.VK_PAUSE # BREAK
         else:
             exit_key = KeyEvent.VK_D
             interrupt_key = KeyEvent.VK_C
