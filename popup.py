@@ -1,5 +1,5 @@
 from java.lang import Character
-from javax.swing import JWindow, JList, JScrollPane, SwingUtilities
+from javax.swing import JWindow, JList, JScrollPane
 from java.awt import Color, Dimension
 from java.awt.event import KeyAdapter
 from java.awt.event import KeyEvent
@@ -93,7 +93,7 @@ class Popup(JWindow):
                 
     def down(self):
         index = self.list.getSelectedIndex()
-        max = self.getSize() - 1
+        max = self.getListSize() - 1
         
         if index < max:
             index += 1
@@ -115,14 +115,14 @@ class Popup(JWindow):
     def pageDown(self):
         index = self.list.getSelectedIndex()
         visibleRows = self.list.getVisibleRowCount()
-        index = min(index + visibleRows, self.getSize() - 1)
+        index = min(index + visibleRows, self.getListSize() - 1)
         self.setSelected(index)
 
     def setSelected(self, index):
         self.list.setSelectedIndex(index)
         self.list.ensureIndexIsVisible(index)
 
-    def getSize(self):
+    def getListSize(self):
         return self.list.getModel().getSize()
 
     def chooseSelected(self):
@@ -148,7 +148,7 @@ class Popup(JWindow):
         # so we know how to replace the selection
         self.dotPosition = self.textComponent.getCaretPosition()
         self.setSize(self.getPreferredSize())
-        JWindow.show(self)
+        self.super__show()
 
     def showMethodCompletionList(self, list, displayPoint):
         self.setLocation(displayPoint)
@@ -168,7 +168,7 @@ class Popup(JWindow):
         if width > Popup.MAX_WIDTH:
             width = Popup.MAX_WIDTH
         if width < Popup.MIN_WIDTH:
-            widht = Popup.MIN_WIDTH
+            width = Popup.MIN_WIDTH
         return Dimension(width, height)
 
     
