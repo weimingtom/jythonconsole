@@ -1,6 +1,7 @@
 """Extend introspect.py for Java based Jython classes."""
 
 from org.python.core import PyJavaClass
+from org.python.core import PyReflectedFunction
 from java.lang import Class
 from java.lang.reflect import Modifier
 from java.util.logging import Logger
@@ -175,9 +176,12 @@ def getCallTipJava(command='', locals=None):
             tip = "%s(%s)" % (constructor.name, paramString)
             tipList.append(tip)
              
-    elif inspect.ismethod(object):
+    elif inspect.ismethod(object) or isinstance(object, PyReflectedFunction):
         method = object
-        object = method.im_class
+        try:
+            object = method.im_class
+        except: # PyReflectedFunction
+            object = method.argslist[0].declaringClass
 
         # java allows overloading so we may have more than one method
         methodArray = object.getMethods()
@@ -258,7 +262,7 @@ def ispython22(object):
 
     object_type = type(object)
 
-    if object_type.__name__.startswith("java"):
+    if object_type.__name__.startswith("java") or isinstance(object, PyReflectedFunction):
         python = False
 
     elif object_type is types.MethodType:
