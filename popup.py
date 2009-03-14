@@ -1,9 +1,7 @@
 from java.lang import Character
 from javax.swing import JWindow, JList, JScrollPane
 from java.awt import Color, Dimension
-from java.awt.event import KeyAdapter
 from java.awt.event import KeyEvent
-import string
 import sys
 
 __author__ = "Don Coleman <dcoleman@chariotsolutions.com>"

@@ -5,26 +5,22 @@ This uses the basic Jython Interactive Interpreter.
 The UI uses code from Carlos Quiroz's 'Jython Interpreter for JEdit' http://www.jedit.org
 """
 
-from javax.swing import JFrame, JScrollPane, JWindow, JTextPane, Action, KeyStroke, WindowConstants
-from javax.swing.text import JTextComponent, TextAction, SimpleAttributeSet, StyleConstants, DefaultEditorKit
-from java.awt import Color, Font, FontMetrics, Point
+from javax.swing import JFrame, JScrollPane, JTextPane, Action, KeyStroke, WindowConstants
+from javax.swing.text import JTextComponent, TextAction, SimpleAttributeSet, StyleConstants
+from java.awt import Color, Font, Point
 from java.awt.event import  InputEvent, KeyEvent, WindowAdapter
 from java.lang import System
 from java.awt import Toolkit
 from java.awt.datatransfer import DataFlavor
 
 import jintrospect
-from jintrospect import debug
 from popup import Popup
 from tip import Tip
 from history import History
 
-import os
 import sys
-import traceback
 from code import InteractiveInterpreter
 from org.python.util import InteractiveConsole
-from exceptions import KeyboardInterrupt
 
 __author__ = "Don Coleman <dcoleman@chariotsolutions.com>"
 

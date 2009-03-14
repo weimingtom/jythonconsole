@@ -4,7 +4,6 @@ from org.python.core import PyJavaClass
 from org.python.core import PyReflectedFunction
 from java.lang import Class
 from java.lang.reflect import Modifier
-from java.util.logging import Logger
 from introspect import *
 from sets import Set
 import string
@@ -170,7 +169,6 @@ def getCallTipJava(command='', locals=None):
             # paramTypes is an array of classes, we need Strings
             # TODO consider list comprehension
             for param in paramTypes:
-                # TODO translate [B to byte[], [C to char[] etc
                 paramList.append(param.__name__)
             paramString = string.join(paramList,', ')
             tip = "%s(%s)" % (constructor.name, paramString)
