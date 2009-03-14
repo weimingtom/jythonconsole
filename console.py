@@ -10,6 +10,8 @@ from javax.swing.text import JTextComponent, TextAction, SimpleAttributeSet, Sty
 from java.awt import Color, Font, FontMetrics, Point
 from java.awt.event import  InputEvent, KeyEvent, WindowAdapter
 from java.lang import System
+from java.awt import Toolkit
+from java.awt.datatransfer import DataFlavor
 
 import jintrospect
 from jintrospect import debug
@@ -160,7 +162,7 @@ class Console:
         else:
             return (caret > limits[0] and caret <= limits[1])
 
-    def enter(self, event):
+    def enter(self, event=None):
         """ Triggered when enter is pressed """
         text = self.getText()
         self.buffer.append(text)
@@ -240,8 +242,17 @@ class Console:
             self.text_pane.cut()
 
     def paste(self, event=None):
+        # if getText was smarter, this method would be unnecessary
         if self.inLastLine():
-            self.text_pane.paste()
+            clipboard = Toolkit.getDefaultToolkit().getSystemClipboard()
+            clipboard.getContents(self.text_pane)
+            contents = clipboard.getData(DataFlavor.stringFlavor)
+
+            lines = contents.split("\n")
+            for line in lines:
+                self.insertText(line)
+                if len(lines) > 1:
+                    self.enter()
 
     def keyTyped(self, event):
         #print >> sys.stderr, "keyTyped", event.getKeyCode()
@@ -336,6 +347,9 @@ class Console:
             (exit_key, InputEvent.CTRL_MASK, "jython.exit", self.quit),
             (KeyEvent.VK_SPACE, InputEvent.CTRL_MASK, "jython.showPopup", self.showPopup),
             (KeyEvent.VK_SPACE, 0, "jython.space", self.spaceTyped),
+
+            # explicitly set paste since we're overriding functionality
+            (KeyEvent.VK_V, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(), "jython.paste", self.paste),
 
             # Mac/Emacs keystrokes
             (KeyEvent.VK_A, InputEvent.CTRL_MASK, "jython.home", self.home),
