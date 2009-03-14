@@ -16,18 +16,27 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 """
-#from org.gjt.sp.jedit.gui import HistoryModel
 
-class History:
-    """
-    The class history handles the history management basically wrapping the
-    built-in jEdit's history capabilities
-    """
+from java.lang import System, Runtime
+from java.lang import Runnable, Thread
 
-    def __init__(self, console):
+class History(Runnable):
+    """
+    Command line history
+    """
+    
+    default_history_file = System.getProperty("user.home") + '/.jythonconsole.history'
+    MAX_SIZE = 200
+
+    def __init__(self, console, history_file=default_history_file):
+        Runtime.getRuntime().addShutdownHook(Thread(self))        
+
+        self.history_file = history_file
         self.history = []
+        self.loadHistory()            
+          
         self.console = console
-        self.index = 0
+        self.index = len(self.history) - 1
         self.last = ""
 
     def append(self, line):
@@ -37,6 +46,7 @@ class History:
         if line != self.last: # avoids duplicates
             self.last = line
             self.history.append(line)
+            
         self.index = len(self.history) - 1
 
     def historyUp(self, event=None):
@@ -52,3 +62,21 @@ class History:
                 self.index += 1
                 self.console.replaceRow(self.history[self.index])
 
+    def loadHistory(self):
+        try:
+            f = open(self.history_file)
+            for line in f.readlines():
+                self.history.append(line[:-1])
+            f.close()
+        except:
+            pass
+        
+    def saveHistory(self):
+        f = open(self.history_file, 'w')
+        for item in self.history[-self.MAX_SIZE:]:
+            f.write("%s\n" % item)
+        f.flush()
+        f.close()
+        
+    def run(self):
+        self.saveHistory()
