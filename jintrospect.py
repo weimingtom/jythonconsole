@@ -1,6 +1,5 @@
 """Extend introspect.py for Java based Jython classes."""
 
-from org.python.core import PyJavaClass
 from org.python.core import PyReflectedFunction
 from java.lang import Class
 from java.lang.reflect import Modifier
@@ -70,7 +69,7 @@ def getAutoCompleteList(command='', locals=None, includeMagic=1, includeSingle=1
     if ispython(object):  # use existing code
         attributes = getAttributeNames(object, includeMagic, includeSingle, includeDouble)
     else:
-        if type(object) == PyJavaClass:
+        if inspect.isclass(object):
             attributes = staticMethodNames(object)
             attributes.extend(staticFieldNames(object))
         else:
