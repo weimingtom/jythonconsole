@@ -4,7 +4,7 @@ Visit http://code.google.com/p/jythonconsole for more information.
 
 Run the code:
   * Open a terminal or cmd prompt
-  * cd jythonconsole-0.0.6
+  * cd jythonconsole-0.0.7
   * jython console.py
 
 Hints:
