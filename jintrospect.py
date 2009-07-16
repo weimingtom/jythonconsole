@@ -92,7 +92,8 @@ def instanceMethodNames(clazz):
                 method_names.add(property_name)                
                                       
     for eachBase in clazz.__bases__:
-        method_names = method_names | instanceMethodNames(eachBase)
+        if not ispython(eachBase):
+            method_names = method_names | instanceMethodNames(eachBase)
 
     return method_names
 
@@ -109,6 +110,7 @@ def staticMethodNames(clazz):
     for eachBase in clazz.__bases__:
         # with Jython 2.5 type is a base of Object, which puts asName in the list        
         # will be a problem for real Java objects that extend Python objects
+        # see similar "fixes" in instanceMethodNames and staticFieldNames
         if not ispython(eachBase):
             methods.extend(staticMethodNames(eachBase)) 
     
